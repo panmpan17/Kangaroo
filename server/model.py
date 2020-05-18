@@ -22,6 +22,7 @@ class Model:
     ]
     meta = None
     engine = None
+    conn = None
 
     @classmethod
     def start_engine(cls, db_uri=None):
@@ -43,6 +44,17 @@ class Model:
             model.register(cls.meta)
 
         cls.meta.create_all(cls.engine)
+    
+    @classmethod
+    def connect(cls):
+        cls.conn = cls.engine.connect()
+        return cls.conn
+    
+    @classmethod
+    def disconnect(cls):
+        if cls.conn is not None:
+            cls.conn.close()
+            cls.conn = None
 
 
 class Account:
@@ -55,11 +67,9 @@ class Account:
             cls.NAME,
             meta,
             Column("id", Integer, primary_key=True, autoincrement=True),
-            Column("userid", String, nullable=False, autoincrement=False,
+            Column("login_id", String, nullable=False, autoincrement=False,
                    unique=True),
             Column("password", String, nullable=False, autoincrement=False),
-            Column("last_login", DateTime, default=datetime.utcnow,
-                   autoincrement=True),
             Column("create_at", DateTime, default=datetime.utcnow,
                    autoincrement=True),
             )
@@ -77,9 +87,8 @@ class Question:
             Column("id", Integer, primary_key=True, autoincrement=True),
             Column("title", String, nullable=False, autoincrement=False),
             Column("content", Text, nullable=False, autoincrement=False),
-            Column("writer", Integer, ForeignKey("tb-account.id"),
-                   nullable=False, autoincrement=False),
-            Column("create_at", DateTime, default=datetime.utcnow,
+            Column("writer", String, nullable=False, autoincrement=False),
+            Column("create_at", DateTime, default=datetime.now,
                    autoincrement=True),
             )
 
