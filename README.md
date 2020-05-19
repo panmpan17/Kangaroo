@@ -1,10 +1,15 @@
 # Kangaroo
 
 ## 檔案說明
+```
 server/           伺服器的檔案
-   \__init__.py   Server
-   mode.py        Database 負責
-   view.py        Html 負責
+   __init__.py    負責 Server, CherryPy
+   mode.py        負責 Database, SQLAlchemy
+   view.py        負責 Html, CherryPy
+
+requirement.txt   需要安裝的 Libarary
+main.             呼叫的程式
+```
 
 ### 安裝
 1. 開啟 Python Virtual Enviroment<br>
