@@ -11,7 +11,7 @@ class Server:
         "server.socket_port": 8080,
         "server.thread_pool": 100,
         "server.max_request_body_size": 50000000,
-        "server.socket_timeout": 5,
+        "server.socket_timeout": 5, # 單位秒數
         }
 
     def __init__(self, db_uri):
@@ -19,9 +19,10 @@ class Server:
         Model.initial_meta()
 
     def run(self):
-        cherrypy.quickstart(MainHandler(), "/")
+        cherrypy.quickstart(MainHandler(), "/")  # view.py
 
 
 if __name__ == "__main__":
-    server = Server()
+    server = Server("sqlite:///:memory:") # memory 方便測試
+    # server = Server("sqlite:///kangaroo.db")  長久的儲存
     server.run()

@@ -44,8 +44,11 @@ class MainHandler:
     def render(src, **params):
         return jinja_env.get_template(src).render(params)
     
-    @cherrypy.expose
-    def index(self, **data):
+    @cherrypy.expose  # function 名字跟 URL 有關
+    def index(self, **data):  # index = "/"
+        print("index")
+
+
         if cherrypy.request.method == "GET":
             return self.render("index.html")
 
@@ -63,11 +66,22 @@ class MainHandler:
             
             conn = Model.connect()
             
+
+
+
+
             # 利用 login_id 查詢 DB
             ss = select([Account.T]).where(
                 Account.T.c.login_id == keys["login_id"])
             result = conn.execute(ss)
             row = result.fetchone()
+            # 通常一個帳號只有一個, 
+
+
+
+
+
+
 
             if keys["type"] == "login":
                 # 必須找到相對的 帳號ID
@@ -95,7 +109,14 @@ class MainHandler:
             return self.render("index.html")
     
     @cherrypy.expose
+    def test(self):
+        print("test")
+        return "test"
+
+    @cherrypy.expose
     def login(self, login_id, **data):
+        print("Login")
+
         if cherrypy.request.method == "GET":
             conn = Model.connect()
 
@@ -103,19 +124,32 @@ class MainHandler:
             result = conn.execute(ss)
             rows = result.fetchall()
             
-            questions = []
+            questions_html = ""
             for row in rows:
-                questions.append({
-                    "id": row["id"],
-                    "title": row["title"],
-                    "content": row["content"].replace("\n", "<br>"),
-                    "writer": row["writer"],
-                    "create_at": row["create_at"],
-                    })
+                questions_html += str(row["id"]) + ",<br>"   # br == break line == \n
+                questions_html += row["title"] + ",<br>"
+                questions_html += row["content"].replace("\n", "<br>") + ",<br>"
+                questions_html += row["writer"] + ",<br>"
+                questions_html += row["create_at"].strftime("%b %d, %p %I %m") + ",<br>"
+                questions_html += "<br><br>"
 
             Model.disconnect()
-            return self.render("login.html", login_id=login_id, questions=questions)
-        
+
+            html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>已登入</title>
+</head>
+<body>
+    <h3>{login_id} 已登入</h3>
+    {questions_html}
+</body>
+</html>"""
+
+        return html
+
         if cherrypy.request.method == "POST":
             keys = self.get_keys(
                 data,

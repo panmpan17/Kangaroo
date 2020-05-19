@@ -21,13 +21,15 @@
     </form>
 
     <hr>
-    <div style="display: flex;">
+    <div>
         {% for question in questions %}
-            <div style="border: 1px solid gray">
-                <div class="title" style="font-size: 28px; color: cornflowerblue;">{{ question.title }}</div>
-                <div style="color: tomato;">{{ question.content }}</div>
-                <span style="color: gray;">{{ question.writer }}<br>{{ question.create_at.strftime("%b %d, %p %I %m") }}</span>
-            </div>
+            <!-- question = { "title": "abc", } -->
+            {{ question }}
+            <h3>標題: {{ question.title }}</h3>
+            <div>內容: {{ question.content }}</div>
+            <div>提問者: {{ question.writer }}</div>
+            <div>發文時間: {{ question.create_at.strftime("%b %d, %p %I %m") }}</div>
+            <hr>
         {% endfor %}
     </div>
 </body>
