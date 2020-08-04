@@ -7,7 +7,11 @@
 </head>
 <body>
     <h1>登入</h1>
-    <form method="POST">
+    {% if login %}
+        以登入
+    {% endif %}
+    <img src="/images/building.png" alt="">
+    <!-- <form method="POST">
         <input name="type" type="text" value="login" hidden>
         <input name="login_id" type="text" required><br>
         <input name="password" type="password" required><br>
@@ -22,6 +26,6 @@
         <input name="login_id" type="text" required><br>
         <input name="password" type="password" required><br>
         <input type="submit" value="Sign Up">
-    </form>
+    </form> -->
 </body>
 </html>

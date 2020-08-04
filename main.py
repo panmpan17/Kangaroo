@@ -24,4 +24,9 @@ class App:
 
 
 if __name__ == "__main__":
-    cherrypy.quickstart(App(), "/expose/")
+    cherrypy.quickstart(App(), "/", {
+        "/images": {
+            "tools.staticdir.on": True,
+            "tools.staticdir.dir": os.path.join(os.getcwd(), "server", "static"),
+        }
+    })
