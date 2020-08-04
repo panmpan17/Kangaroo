@@ -14,9 +14,9 @@ class App:
 
     @cherrypy.expose  # function 名字跟 URL 有關
     def index(self, **data):  # index = "/"
-        return "Index"
+        # return "Index"
         # if cherrypy.request.method == "GET":
-        #     return self.render("index.html", login=True)
+        return self.render("index.html")
 
     @cherrypy.expose
     def url_al(self):
