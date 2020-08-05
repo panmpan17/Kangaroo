@@ -7,10 +7,20 @@
 </head>
 <body>
     <h1>登入</h1>
-    {% if login %}
-        以登入
-    {% endif %}
-    <img src="/images/building.png" alt="">
+    <!-- <img src="/images/building.png" alt=""> -->
+    <form method="POST">
+        <h4>awd</h4>
+        <input name="login_id" type="text" required><br>
+
+        <input type="submit" value="鞥入">
+    </form>
+
+
+    <!-- <form action="/login">
+        <input name="signup" type="text" required><br>
+
+        <input type="submit" value="註冊">
+    </form> -->
     <!-- <form method="POST">
         <input name="type" type="text" value="login" hidden>
         <input name="login_id" type="text" required><br>
