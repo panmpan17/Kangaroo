@@ -7,6 +7,7 @@ dirname = os.path.join(os.path.dirname(__file__), "server/template")
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(dirname))
 
 
+# App
 class App:
     @staticmethod
     def render(src, **params):
