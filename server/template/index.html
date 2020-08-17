@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>{% if login_id %}已登入使用者{% else %}首頁{% endif %}</title>
 </head>
 <body>
     {% if login_id %}

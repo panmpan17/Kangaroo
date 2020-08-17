@@ -1,17 +1,37 @@
 import os
 import jinja2
 import cherrypy
+import hashlib
+import sqlalchemy
 
-from hashlib import sha256
+from datetime import datetime
+from sqlalchemy import Table, Column
+from sqlalchemy.types import Integer, String, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import select
 
 
 dirname = os.path.join(os.path.dirname(__file__), "server/template")
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(dirname))
 
+Base = declarative_base()
 
-accounts = {
-    "michael": sha256(b"panpan").hexdigest()
-}
+
+class Account(Base):
+    __tablename__ = "account"
+
+    id = Column(Integer, primary_key=True)
+    login_id = Column(String)
+    password = Column(String)
+    create_at = Column(DateTime, default=datetime.utcnow)
+
+
+engine = sqlalchemy.create_engine("sqlite:///server.db")
+Base.metadata.create_all(engine)
+
+
+def sha256(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
 
 # App
@@ -33,7 +53,7 @@ class App:
             return self.render("index.html")
         
         elif cherrypy.request.method == "POST":
-            password = sha256(password.encode()).hexdigest()
+            password = sha256(password)
 
             if form_type == "login":
                 return self.handle_login(login_id, password)
@@ -41,11 +61,20 @@ class App:
                 return self.handle_signup(login_id, password)
 
     def handle_login(self, login_id, password):
-        if login_id not in accounts:
-            return self.render("index.html", login_wrong=True)
+        conn = engine.connect()
 
-        if accounts[login_id] != password:
+        rst = conn.execute(select([Account.__table__]).where(
+            Account.__table__.c.login_id == login_id))
+        row = rst.fetchone()
+
+        if row is None:
+            conn.close()
             return self.render("index.html", login_wrong=True)
+        if row["password"] != password:
+            conn.close()
+            return self.render("index.html", login_wrong=True)
+        
+        conn.close()
 
         cherrypy.response.cookie["login_id"] = login_id
         cherrypy.response.cookie["login_id"]["path"] = "/"
@@ -54,10 +83,22 @@ class App:
         raise cherrypy.HTTPRedirect("/")
 
     def handle_signup(self, login_id, password):
-        if login_id in accounts:
-            return self.render("index.html", signup_wrong=True)
+        conn = engine.connect()
+
+        rst = conn.execute(select([Account.__table__]).where(
+            Account.__table__.c.login_id == login_id))
+        row = rst.fetchone()
         
-        accounts[login_id] = password
+        if row is not None:
+            conn.close()
+            return self.render("index.html", signup_wrong=True)
+
+        conn.execute(Account.__table__.insert(), {
+            "login_id": login_id,
+            "password": password,
+        })
+
+        conn.close()
 
         cherrypy.response.cookie["login_id"] = login_id
         cherrypy.response.cookie["login_id"]["path"] = "/"
@@ -74,10 +115,6 @@ class App:
             cherrypy.response.cookie["login_id"]["expires"] = 0
 
         raise cherrypy.HTTPRedirect("/")
-
-    @cherrypy.expose
-    def google(self):
-        raise cherrypy.HTTPRedirect("https://google.com")
 
 
 if __name__ == "__main__":
