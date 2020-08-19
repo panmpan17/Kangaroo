@@ -85,8 +85,10 @@ class App:
     def handle_signup(self, login_id, password):
         conn = engine.connect()
 
-        rst = conn.execute(select([Account.__table__]).where(
-            Account.__table__.c.login_id == login_id))
+        ss = select([Account.__table__]).where(
+            Account.__table__.c.login_id == login_id)
+        rst = conn.execute(ss)
+
         row = rst.fetchone()
         
         if row is not None:
