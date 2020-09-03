@@ -27,11 +27,36 @@ class Account(Base):
 
 
 engine = sqlalchemy.create_engine("sqlite:///server.db")
+conn = None
 Base.metadata.create_all(engine)
 
 
 def sha256(password):
     return hashlib.sha256(password.encode()).hexdigest()
+
+
+def db(func):
+    def db_connect_close(*args, **kwargs):
+        global conn
+        conn = engine.connect()
+        print("open db connection")
+
+        try:
+            print(1)
+            result = func(*args, **kwargs)
+        except Exception as e:
+            conn.close()
+            print("Error, but db still closeed")
+            # print(e)
+            raise e
+            # assert e
+
+        conn.close()
+        print("close db connection")
+
+        return result
+    
+    return db_connect_close
 
 
 # App
@@ -42,39 +67,41 @@ class App:
 
     @cherrypy.expose  # function 名字跟 URL 有關
     def index(self, form_type=None, login_id=None, password=None):  # index = "/"
-        if cherrypy.request.method == "GET":
-            login_cookie = cherrypy.request.cookie.get("login_id")
+        return self.render("css-demo.html")
+        # if cherrypy.request.method == "GET":
+        #     login_cookie = cherrypy.request.cookie.get("login_id")
 
-            if login_cookie is not None:
-                return self.render(
-                    "index.html",
-                    login_id=login_cookie.value)
+        #     if login_cookie is not None:
+        #         return self.render(
+        #             "index.html",
+        #             login_id=login_cookie.value)
 
-            return self.render("index.html")
+        #     return self.render("index.html")
         
-        elif cherrypy.request.method == "POST":
-            password = sha256(password)
+        # elif cherrypy.request.method == "POST":
+        #     password = sha256(password)
 
-            if form_type == "login":
-                return self.handle_login(login_id, password)
-            else:
-                return self.handle_signup(login_id, password)
+        #     if form_type == "login":
+        #         return self.handle_login(login_id, password)
+        #     else:
+        #         return self.handle_signup(login_id, password)
 
+    @db
     def handle_login(self, login_id, password):
-        conn = engine.connect()
+        # conn = engine.connect()
 
         rst = conn.execute(select([Account.__table__]).where(
             Account.__table__.c.login_id == login_id))
         row = rst.fetchone()
 
         if row is None:
-            conn.close()
+            # conn.close()
             return self.render("index.html", login_wrong=True)
         if row["password"] != password:
-            conn.close()
+            # conn.close()
             return self.render("index.html", login_wrong=True)
         
-        conn.close()
+        # conn.close()
 
         cherrypy.response.cookie["login_id"] = login_id
         cherrypy.response.cookie["login_id"]["path"] = "/"
@@ -82,8 +109,9 @@ class App:
 
         raise cherrypy.HTTPRedirect("/")
 
+    @db
     def handle_signup(self, login_id, password):
-        conn = engine.connect()
+        # conn = engine.connect()
 
         ss = select([Account.__table__]).where(
             Account.__table__.c.login_id == login_id)
@@ -92,7 +120,7 @@ class App:
         row = rst.fetchone()
         
         if row is not None:
-            conn.close()
+            # conn.close()
             return self.render("index.html", signup_wrong=True)
 
         conn.execute(Account.__table__.insert(), {
@@ -100,7 +128,7 @@ class App:
             "password": password,
         })
 
-        conn.close()
+        # conn.close()
 
         cherrypy.response.cookie["login_id"] = login_id
         cherrypy.response.cookie["login_id"]["path"] = "/"
